@@ -7,6 +7,7 @@ import com.example.taskmanager.data.Task
 import com.example.taskmanager.domain.usecase.DeleteTaskUseCase
 import com.example.taskmanager.domain.usecase.GetTaskByIdUseCase
 import com.example.taskmanager.domain.usecase.UpdateTaskUseCase
+import com.example.taskmanager.notification.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,7 @@ class TaskDetailViewModel @Inject constructor(
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val alarmScheduler: AlarmScheduler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -39,11 +41,15 @@ class TaskDetailViewModel @Inject constructor(
     fun updateTask(task: Task) {
         viewModelScope.launch {
             updateTaskUseCase(task)
+            task.reminder?.let { 
+                alarmScheduler.schedule(task)
+            } ?: alarmScheduler.cancel(task)
         }
     }
 
     fun deleteTask(task: Task) {
         viewModelScope.launch {
+            alarmScheduler.cancel(task)
             deleteTaskUseCase(task)
         }
     }
