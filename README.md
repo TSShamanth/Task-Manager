@@ -48,9 +48,10 @@ The application follows a Clean Architecture pattern with a clear separation of 
 3.  **Sync Gradle:** Let Gradle sync the project dependencies. This might take some time.
 4.  **Run on a Device/Emulator:** Select an Android device or emulator (API Level 24 or higher) and click the 'Run' button in Android Studio.
 
-## Video Showcase
+## Images Showcase
 
-[//]: # (TODO: Add a public link to a short video showcasing all main features here.)
+These are some pictures of the app's user interface :<br /><br />
+<img src="Images/Main Screen.png" width=180>
 
 ## Notes, Assumptions, and Limitations
 
