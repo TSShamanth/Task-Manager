@@ -35,26 +35,42 @@ class TaskListViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     init {
         getTasks()
     }
 
     private fun getTasks() {
-        combine(getTasksUseCase(), _currentFilter, _searchQuery) { tasks, filter, query ->
-            val filteredTasks = tasks.filter { task ->
-                task.title.contains(query, ignoreCase = true)
-            }.filter { task ->
-                when (filter) {
-                    TaskFilter.All -> true
-                    TaskFilter.Today -> isToday(task.dueDate) && task.status != "Completed"
-                    TaskFilter.Completed -> task.status == "Completed"
-                    TaskFilter.Overdue -> isOverdue(task.dueDate) && task.status != "Completed"
-                }
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                combine(getTasksUseCase(), _currentFilter, _searchQuery) { tasks, filter, query ->
+                    val filteredTasks = tasks.filter { task ->
+                        task.title.contains(query, ignoreCase = true)
+                    }.filter { task ->
+                        when (filter) {
+                            TaskFilter.All -> true
+                            TaskFilter.Today -> isToday(task.dueDate) && task.status != "Completed"
+                            TaskFilter.Completed -> task.status == "Completed"
+                            TaskFilter.Overdue -> isOverdue(task.dueDate) && task.status != "Completed"
+                        }
+                    }
+                    groupTasks(filteredTasks)
+                }.onEach {
+                    _tasks.value = it
+                }.launchIn(viewModelScope)
+            } catch (e: Exception) {
+                _error.value = "Failed to load tasks: ${e.localizedMessage}"
+            } finally {
+                _isLoading.value = false
             }
-            groupTasks(filteredTasks)
-        }.onEach {
-            _tasks.value = it
-        }.launchIn(viewModelScope)
+        }
     }
 
     fun onTaskCheckedChanged(task: Task, isChecked: Boolean) {
