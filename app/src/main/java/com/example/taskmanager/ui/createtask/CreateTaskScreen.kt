@@ -44,13 +44,14 @@ fun CreateTaskScreen(
 
     val context = LocalContext.current
 
-    val calendar = Calendar.getInstance()
+    val calendar = remember { Calendar.getInstance() }
 
     val datePickerDialog = DatePickerDialog(
         context,
         { _: DatePicker, selectedYear: Int, selectedMonth: Int, selectedDayOfMonth: Int ->
             calendar.set(selectedYear, selectedMonth, selectedDayOfMonth)
             dueDate = calendar.timeInMillis
+            if (hasReminder) reminderTime = calendar.timeInMillis // Update reminder date as well
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -60,14 +61,20 @@ fun CreateTaskScreen(
     val timePickerDialog = TimePickerDialog(
         context,
         { _: TimePicker, selectedHour: Int, selectedMinute: Int ->
-            calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
-            calendar.set(Calendar.MINUTE, selectedMinute)
-            reminderTime = calendar.timeInMillis
+            val tempCalendar = Calendar.getInstance().apply { timeInMillis = dueDate }
+            tempCalendar.set(Calendar.HOUR_OF_DAY, selectedHour)
+            tempCalendar.set(Calendar.MINUTE, selectedMinute)
+            reminderTime = tempCalendar.timeInMillis
         },
         calendar.get(Calendar.HOUR_OF_DAY),
         calendar.get(Calendar.MINUTE),
         false
     )
+
+    // Initialize reminderTime if hasReminder is true and reminderTime is null
+    if (hasReminder && reminderTime == null) {
+        reminderTime = dueDate
+    }
 
     Column(
         modifier = Modifier

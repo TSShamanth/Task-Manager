@@ -3,6 +3,7 @@ package com.example.taskmanager.ui.tasklist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskmanager.data.Task
+import com.example.taskmanager.domain.usecase.DeleteTaskUseCase
 import com.example.taskmanager.domain.usecase.GetTasksUseCase
 import com.example.taskmanager.domain.usecase.UpdateTaskUseCase
 import com.example.taskmanager.notification.AlarmScheduler
@@ -21,6 +22,7 @@ import javax.inject.Inject
 class TaskListViewModel @Inject constructor(
     private val getTasksUseCase: GetTasksUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
+    private val deleteTaskUseCase: DeleteTaskUseCase,
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
 
@@ -30,17 +32,24 @@ class TaskListViewModel @Inject constructor(
     private val _currentFilter = MutableStateFlow<TaskFilter>(TaskFilter.All)
     val currentFilter: StateFlow<TaskFilter> = _currentFilter.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     init {
         getTasks()
     }
 
     private fun getTasks() {
-        combine(getTasksUseCase(), _currentFilter) { tasks, filter ->
-            val filteredTasks = when (filter) {
-                TaskFilter.All -> tasks
-                TaskFilter.Today -> tasks.filter { isToday(it.dueDate) && it.status != "Completed" }
-                TaskFilter.Completed -> tasks.filter { it.status == "Completed" }
-                TaskFilter.Overdue -> tasks.filter { isOverdue(it.dueDate) && it.status != "Completed" }
+        combine(getTasksUseCase(), _currentFilter, _searchQuery) { tasks, filter, query ->
+            val filteredTasks = tasks.filter { task ->
+                task.title.contains(query, ignoreCase = true)
+            }.filter { task ->
+                when (filter) {
+                    TaskFilter.All -> true
+                    TaskFilter.Today -> isToday(task.dueDate) && task.status != "Completed"
+                    TaskFilter.Completed -> task.status == "Completed"
+                    TaskFilter.Overdue -> isOverdue(task.dueDate) && task.status != "Completed"
+                }
             }
             groupTasks(filteredTasks)
         }.onEach {
@@ -62,6 +71,17 @@ class TaskListViewModel @Inject constructor(
 
     fun onFilterSelected(filter: TaskFilter) {
         _currentFilter.value = filter
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            alarmScheduler.cancel(task)
+            deleteTaskUseCase(task)
+        }
     }
 
     private fun groupTasks(tasks: List<Task>): Map<String, List<Task>> {
