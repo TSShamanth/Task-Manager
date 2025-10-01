@@ -52,19 +52,12 @@ The application follows a Clean Architecture pattern with a clear separation of 
 
 These are some pictures of the app's user interface :<br /><br />
 <img src="Images/Main Screen.png" width=180>
-<br /><br />
 <img src="Images/Filter_options Screen.png" width=180>
-<br /><br />
 <img src="Images/Search_Bar Screen.png" width=180>
-<br /><br />
 <img src="Images/Create_Task Screen.png" width=180>
-<br /><br />
 <img src="Images/Today_Task Screen.png" width=180>
-<br /><br />
 <img src="Images/Completed_Task Screen.png" width=180>
-<br /><br />
 <img src="Images/Overdue_task Screen.png" width=180>
-<br /><br />
 <img src="Images/Edit_Task Screen.png" width=180>
 
 ## Notes, Assumptions, and Limitations
