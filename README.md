@@ -66,6 +66,5 @@ These are some pictures of the app's user interface :<br /><br />
 *   **Error Handling:** Basic validation for required fields (e.g., task title) is implemented. More robust error handling and user feedback can be added.
 *   **UI Polish:** The UI is functional but can be further polished with more custom styling, animations, and better handling of various screen sizes and orientations.
 *   **Notification Actions:** Advanced notification actions (Mark Done, Snooze) are not yet implemented but are planned.
-*   **Search Functionality:** Search by title is not yet implemented.
 *   **Time Zones:** Reminder scheduling currently uses the device's default time zone. For a more robust solution, explicit time zone handling might be required.
 *   **Boot Completed:** While the `RECEIVE_BOOT_COMPLETED` permission is added, the logic to reschedule alarms after a device reboot is not yet implemented.
